@@ -8,10 +8,11 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
 Implemented:
   - Random_Reply: send a random reply to a user from a list any time they message you
   - Mark_Read: For all those pesky notifications where your coworkers hit @channel on meaningless stuff. Mark those as read and ignore them.
+    - Someones_Talking_About_You: if client user's messages contain the name of another user on the slack environment, post a message in a selected channel with the contents of the message and the parties involved all tagged
   
 Planned:
   - Set_Typing: whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
-  - Someones_Talking_About_You: if client user's messages contain the name of another user on the slack environment, send them a dm with the contents of the message and the parties involved
+
 
 ## Installation
 
