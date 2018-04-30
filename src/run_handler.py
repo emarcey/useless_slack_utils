@@ -17,22 +17,15 @@ users = [
     'U9V5Q6886'
 ]
 
-responses = [
-    'Wow! That\'s so interesting!',
-    'What hilarious hijinx you\'ve been getting up to!',
-    'Where has the time gone?',
-    'Curious',
-    'I\'ve never thought of it that way.',
-    'I\'ll keep that in mind.',
-    'Thanks for letting me know.',
-    'I\'ll be sure to follow up on that.'
-]
 
 seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
-                        True,
-                        True,
-                        True,
-                        "DM Only",
-                        users)
+                        random_reply_flg=False,
+                        set_typing_flg=False,
+                        mark_read_flg=False,
+                        someones_talking_about_you_flg=True,
+                        run_level="DM Only",
+                        users=users,
+                        stay_channel='slack_py_test'
+                        )
 
-seh.begin(20)
+seh.begin()
