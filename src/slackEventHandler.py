@@ -124,11 +124,11 @@ class SlackEventHandler:
                 sc.rtm_send_message(event[0]['channel'], self.responses[randint])
 
         except KeyError:
-            print(event)
-            print(event[0].keys())
             if 'type' not in event[0].keys():
                 logger.debug("Don't worry about this one.")
                 logger.debug(event)
+            else:
+                raise
 
     def mark_read(self, sc, event, msg_type):
         """
@@ -155,8 +155,9 @@ class SlackEventHandler:
                     logger.debug('Don\'t change')
 
         except KeyError:
-            print(event)
-            print(event[0].keys())
             if 'type' not in event[0].keys():
                 logger.debug("Don't worry about this one.")
                 logger.debug(event)
+            else:
+                raise
+
