@@ -1,8 +1,8 @@
 import logging
-import os
 import time
 import random
 from slackclient import SlackClient
+from src.str_utils import find_element_in_string
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -59,23 +59,28 @@ class SlackEventHandler:
 
         sc = SlackClient(self.slack_token)
         try:
-            channel_list = sc.api_call("channels.list")['channels']
-
             if sc.rtm_connect():
                 start_time = time.time()
                 while sc.server.connected and (time.time() <= start_time+length or length ==-1):
                     event = sc.rtm_read()
+
                     try:
                         if event:
-                            if (self.run_level == 'DM Only' and
-                                        event[0]['channel'] not in [ch['name'] for ch in channel_list]) or \
-                                    (self.run_level == 'Private' and
-                                             (event[0]['channel'] not in [ch['name'] for ch in channel_list] or
-                                                event[0]['channel'] in [ch['name'] for ch in channel_list if ch['is_private'] is True])) or \
-                                    (self.run_level == 'All'):
+                            logger.debug(event)
+
+                            im_info = sc.api_call("im.info", channel=event[0]['channel'])
+                            if 'ok' in im_info.keys() and im_info['ok'] is False:
+                                is_im = False
+                            else:
+                                is_im = True
+
+                            if self.run_level == 'DM Only' and is_im:
                                 if self.random_reply_flg:
                                     self.random_reply(sc, event)
-
+                                if self.mark_read_flg:
+                                    self.mark_read(sc, event, is_im)
+                            else:
+                                logger.debug("Nope")
                         time.sleep(1)
 
                         if time.time() > start_time+length:
@@ -102,6 +107,33 @@ class SlackEventHandler:
                 randint = random.randint(0, len(self.responses) - 1)
                 sc.rtm_send_message(event[0]['channel'],
                                     self.responses[randint])
+        except KeyError:
+            print(event)
+            print(event[0].keys())
+            if 'type' not in event[0].keys():
+                logger.debug("Don't worry about this one.")
+                logger.debug(event)
+
+    def mark_read(self, sc, event, is_im):
+        """
+        :param sc: SlackClient used to connect to server
+        :param event: event to be handled by the mark_read
+        :param is_im: if type is direct message
+        :return:
+        """
+        try:
+            if event[0]['type'] == 'message':
+
+                text = event[0]['text']
+
+                if find_element_in_string(text, '<') != -1 and \
+                        find_element_in_string(text, '>') != -1 and \
+                        find_element_in_string(text, sc.server.username) == -1:
+                    if is_im:
+                        sc.api_call("im.mark",event[0]['channel'],event[0]['ts'])
+                else:
+                    logger.debug('Don\'t change')
+
         except KeyError:
             print(event)
             print(event[0].keys())
