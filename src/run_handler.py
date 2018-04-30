@@ -14,13 +14,25 @@ sc = SlackClient(slack_token)
 
 users = [
     'USLACKBOT',
+    'U9V5Q6886'
+]
+
+responses = [
+    'Wow! That\'s so interesting!',
+    'What hilarious hijinx you\'ve been getting up to!',
+    'Where has the time gone?',
+    'Curious',
+    'I\'ve never thought of it that way.',
+    'I\'ll keep that in mind.',
+    'Thanks for letting me know.',
+    'I\'ll be sure to follow up on that.'
 ]
 
 seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
                         True,
                         True,
                         True,
+                        "DM Only",
                         users)
 
-#runs the handler for 20 seconds
 seh.begin(20)
