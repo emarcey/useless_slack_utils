@@ -16,6 +16,7 @@ class SlackEventHandler:
                  random_reply_flg=False,
                  set_typing_flg=False,
                  mark_read_flg=False,
+                 run_level="DM Only",
                  users=None,
                  responses=None
                  ):
@@ -24,6 +25,7 @@ class SlackEventHandler:
         :param random_reply_flg: (Bool) True if you want the handler to perform the random_reply handling
         :param set_typing_flg: (Bool) True if you want the handler to perform the set_typing handling
         :param mark_read_flg: (Bool) True if you want the handler to perform the mark_read handling
+        :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels), and all
         :param users: ([str]) List of users for whom events should be handled
         :param responses: ([str]) If using the random_reply, this is the list of custom responses
         """
@@ -31,6 +33,7 @@ class SlackEventHandler:
         self.random_reply_flg = random_reply_flg
         self.set_typing_flg = set_typing_flg
         self.mark_read_flg = mark_read_flg
+        self.run_level = run_level
         self.users = users
         if responses:
             self.responses = responses
@@ -56,20 +59,34 @@ class SlackEventHandler:
 
         sc = SlackClient(self.slack_token)
         try:
+            channel_list = sc.api_call("channels.list")['channels']
+
             if sc.rtm_connect():
                 start_time = time.time()
                 while sc.server.connected and (time.time() <= start_time+length or length ==-1):
                     event = sc.rtm_read()
+                    try:
+                        if event:
+                            if (self.run_level == 'DM Only' and
+                                        event[0]['channel'] not in [ch['name'] for ch in channel_list]) or \
+                                    (self.run_level == 'Private' and
+                                             (event[0]['channel'] not in [ch['name'] for ch in channel_list] or
+                                                event[0]['channel'] in [ch['name'] for ch in channel_list if ch['is_private'] is True])) or \
+                                    (self.run_level == 'All'):
+                                if self.random_reply_flg:
+                                    self.random_reply(sc, event)
 
-                    if self.random_reply_flg:
-                        self.random_reply(sc, event)
+                        time.sleep(1)
 
-                    time.sleep(1)
+                        if time.time() > start_time+length:
+                            logger.debug("Event handling completed.\nStopping Slack monitor.")
 
-                if time.time() > start_time+length:
-                    logger.debug("Event handling completed.\nStopping Slack monitor.")
+                    except KeyError:
+                        logger.debug(event)
+                        logger.debug("Ignore this event")
         except KeyboardInterrupt:
             logger.debug("Stopping Slack monitor.")
+            raise
 
     def random_reply(self, sc, event):
         """
@@ -83,7 +100,8 @@ class SlackEventHandler:
                             event[0]['type'] == 'message' and \
                             event[0]['user'] in self.users:
                 randint = random.randint(0, len(self.responses) - 1)
-
+                channel_info = sc.api_call('channels.info',channel=event[0]['channel'])
+                logger.debug(channel_info)
                 sc.rtm_send_message(event[0]['channel'],
                                     self.responses[randint])
         except KeyError:
