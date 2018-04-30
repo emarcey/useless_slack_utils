@@ -36,7 +36,7 @@ class SlackEventHandler:
         :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
-        :param users: ([str]) List of users for whom events should be handled
+        :param users: ([str]) List of users for whom events should be handled, or 'All'; defaults to None
         :param responses: ([str]) If using the random_reply, this is the list of custom responses
         :param stay_channel: (str) channel to use if you're doing someones_talking_about_you
         """
@@ -151,7 +151,7 @@ class SlackEventHandler:
         try:
             if event and \
                 event[0]['type'] == 'message' and \
-                    event[0]['user'] in self.users:
+                    (event[0]['user'] in self.users or self.users == 'All'):
                 randint = random.randint(0, len(self.responses) - 1)
 
                 message = self.responses[randint]
@@ -261,7 +261,7 @@ class SlackEventHandler:
         try:
             if event and \
                 event[0]['type'] == 'message' and \
-                    event[0]['user'] in self.users:
+                    (event[0]['user'] in self.users or self.users=='All'):
                 randint = random.randint(0, 10)
                 print(find_element_in_string(event[0]['text'],'?'))
                 if find_element_in_string(event[0]['text'],'?') >= 0:
