@@ -22,5 +22,5 @@ Planned:
 2. Clone the repo.
 3. Set up a test token using [Python-SlackClient](https://slackapi.github.io/python-slackclient/auth.html#test-tokens).
 4. Most of the packages are base Python packages, but you will need to install:
-  - [giphypop](https://github.com/shaunduncan/giphypop)
+   - [giphypop](https://github.com/shaunduncan/giphypop)
 5. Use run_random_reply to test.
