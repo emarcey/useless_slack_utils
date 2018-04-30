@@ -69,16 +69,18 @@ class SlackEventHandler:
                             logger.debug(event)
 
                             msg_type = self.get_msg_type(sc, event)
-
+                            logger.debug(msg_type)
                             if (self.run_level == 'DM Only' and msg_type == 'IM') or \
                                 (self.run_level == 'Private' and msg_type != 'Public') or\
                                     self.run_level == 'All':
+
+                                #if message is in correct scope, perform designated tasks
                                 if self.random_reply_flg:
                                     self.random_reply(sc, event, msg_type)
                                 if self.mark_read_flg:
                                     self.mark_read(sc, event, msg_type)
                             else:
-                                logger.debug("Nope")
+                                logger.debug("Message not in scope.")
                         time.sleep(1)
 
                     except KeyError:
@@ -99,7 +101,7 @@ class SlackEventHandler:
         """
         im_info = sc.api_call("im.info", channel=event[0]['channel'])
         if 'ok' in im_info.keys() and im_info['ok'] is False:
-            dm_info = sc.api_call("groups.info")
+            dm_info = sc.api_call("groups.info", channel=event[0]['channel'])
             if 'ok' in dm_info.keys() and dm_info['ok'] is False:
                 return 'Public'
             else:
@@ -107,22 +109,20 @@ class SlackEventHandler:
         else:
             return 'IM'
 
-    def random_reply(self, sc, event, msg_type):
+    def random_reply(self, sc, event):
         """
         :param sc: SlackClient used to connect to server
         :param event: event to be handled by the random_reply
-        :param msg_type: type of message
         :return:
         """
 
         try:
             if event and \
-                            event[0]['type'] == 'message' and \
-                            event[0]['user'] in self.users:
+                event[0]['type'] == 'message' and \
+                    event[0]['user'] in self.users:
                 randint = random.randint(0, len(self.responses) - 1)
-                if msg_type != 'Private':
-                    sc.rtm_send_message(event[0]['channel'],
-                                        self.responses[randint])
+                sc.rtm_send_message(event[0]['channel'], self.responses[randint])
+
         except KeyError:
             print(event)
             print(event[0].keys())
@@ -156,3 +156,4 @@ class SlackEventHandler:
             if 'type' not in event[0].keys():
                 logger.debug("Don't worry about this one.")
                 logger.debug(event)
+
