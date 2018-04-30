@@ -10,10 +10,10 @@ Implemented:
     - Gif flag sends random reply as giphy search result
   - Mark_Read: For all those pesky notifications where your coworkers hit @channel on meaningless stuff. Mark those as read and ignore them.
     - Someones_Talking_About_You: if client user's messages contain the name of another user on the slack environment, post a message in a selected channel with the contents of the message and the parties involved all tagged
+  - Magic_8_Ball: whenever someone asks you a question, send a magic 8 ball giphy
   
 Planned:
   - Set_Typing: whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
-  - Magic_8_Ball: whenever someone asks you a question, send a magic 8 ball giphy
 
 
 ## Installation
