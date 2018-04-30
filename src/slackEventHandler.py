@@ -147,6 +147,10 @@ class SlackEventHandler:
                         find_element_in_string(text, sc.server.username) == -1:
                     if msg_type == 'IM':
                         sc.api_call("im.mark", channel=event[0]['channel'], ts=event[0]['ts'])
+                    elif msg_type == 'Private':
+                        sc.api_call("groups.mark", channel=event[0]['channel'], ts=event[0]['ts'])
+                    else:
+                        sc.api_call("channels.mark", channel=event[0]['channel'], ts=event[0]['ts'])
                 else:
                     logger.debug('Don\'t change')
 
@@ -156,4 +160,3 @@ class SlackEventHandler:
             if 'type' not in event[0].keys():
                 logger.debug("Don't worry about this one.")
                 logger.debug(event)
-
