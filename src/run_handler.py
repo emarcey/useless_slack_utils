@@ -14,15 +14,16 @@ sc = SlackClient(slack_token)
 
 users = [
     'USLACKBOT',
-    'U9V5Q6886'
+    'U9V5Q6886',
+    'U9UHKFV9R'
 ]
 
-
 seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
-                        random_reply_flg=False,
+                        random_reply_flg=True,
+                        random_gif_flg=True,
                         set_typing_flg=False,
                         mark_read_flg=False,
-                        someones_talking_about_you_flg=True,
+                        someones_talking_about_you_flg=False,
                         run_level="DM Only",
                         users=users,
                         stay_channel='slack_py_test'
