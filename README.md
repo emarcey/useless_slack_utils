@@ -3,6 +3,7 @@ Very important Slack utilities for the otherwise lazy among you
 
 Uses the Slack client for Python to handle incoming events in a series of pretty useless ways.
 
+A SlackEventHandler checks all of your incoming messages and handles them according to the utilities. This is based off the [Python-SlackClient](https://slackapi.github.io/python-slackclient/index.html).
 
 Implemented:
   - Random_Reply: send a random reply to a user from a list any time they message you
