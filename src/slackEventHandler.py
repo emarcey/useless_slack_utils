@@ -68,35 +68,50 @@ class SlackEventHandler:
                         if event:
                             logger.debug(event)
 
-                            im_info = sc.api_call("im.info", channel=event[0]['channel'])
-                            if 'ok' in im_info.keys() and im_info['ok'] is False:
-                                is_im = False
-                            else:
-                                is_im = True
+                            msg_type = self.get_msg_type(sc, event)
 
-                            if self.run_level == 'DM Only' and is_im:
+                            if (self.run_level == 'DM Only' and msg_type == 'IM') or \
+                                (self.run_level == 'Private' and msg_type != 'Public') or\
+                                    self.run_level == 'All':
                                 if self.random_reply_flg:
-                                    self.random_reply(sc, event)
+                                    self.random_reply(sc, event, msg_type)
                                 if self.mark_read_flg:
-                                    self.mark_read(sc, event, is_im)
+                                    self.mark_read(sc, event, msg_type)
                             else:
                                 logger.debug("Nope")
                         time.sleep(1)
 
-                        if time.time() > start_time+length:
-                            logger.debug("Event handling completed.\nStopping Slack monitor.")
-
                     except KeyError:
                         logger.debug(event)
                         logger.debug("Ignore this event")
+
+                if time.time() > start_time + length:
+                    logger.debug("Event handling completed.\nStopping Slack monitor.")
         except KeyboardInterrupt:
             logger.debug("Stopping Slack monitor.")
             raise
 
-    def random_reply(self, sc, event):
+    def get_msg_type(self, sc, event):
         """
         :param sc: SlackClient used to connect to server
         :param event: event to be handled by the random_reply
+        :return: type of message (Public, Private or IM)
+        """
+        im_info = sc.api_call("im.info", channel=event[0]['channel'])
+        if 'ok' in im_info.keys() and im_info['ok'] is False:
+            dm_info = sc.api_call("groups.info")
+            if 'ok' in dm_info.keys() and dm_info['ok'] is False:
+                return 'Public'
+            else:
+                return 'Private'
+        else:
+            return 'IM'
+
+    def random_reply(self, sc, event, msg_type):
+        """
+        :param sc: SlackClient used to connect to server
+        :param event: event to be handled by the random_reply
+        :param msg_type: type of message
         :return:
         """
 
@@ -105,8 +120,9 @@ class SlackEventHandler:
                             event[0]['type'] == 'message' and \
                             event[0]['user'] in self.users:
                 randint = random.randint(0, len(self.responses) - 1)
-                sc.rtm_send_message(event[0]['channel'],
-                                    self.responses[randint])
+                if msg_type != 'Private':
+                    sc.rtm_send_message(event[0]['channel'],
+                                        self.responses[randint])
         except KeyError:
             print(event)
             print(event[0].keys())
@@ -114,11 +130,11 @@ class SlackEventHandler:
                 logger.debug("Don't worry about this one.")
                 logger.debug(event)
 
-    def mark_read(self, sc, event, is_im):
+    def mark_read(self, sc, event, msg_type):
         """
         :param sc: SlackClient used to connect to server
         :param event: event to be handled by the mark_read
-        :param is_im: if type is direct message
+        :param msg_type: type of message
         :return:
         """
         try:
@@ -129,8 +145,8 @@ class SlackEventHandler:
                 if find_element_in_string(text, '<') != -1 and \
                         find_element_in_string(text, '>') != -1 and \
                         find_element_in_string(text, sc.server.username) == -1:
-                    if is_im:
-                        sc.api_call("im.mark",event[0]['channel'],event[0]['ts'])
+                    if msg_type == 'IM':
+                        sc.api_call("im.mark", channel=event[0]['channel'], ts=event[0]['ts'])
                 else:
                     logger.debug('Don\'t change')
 
