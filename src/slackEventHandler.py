@@ -3,6 +3,7 @@ import time
 import random
 from slackclient import SlackClient
 from src.str_utils import find_element_in_string
+import giphypop
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -14,6 +15,7 @@ class SlackEventHandler:
     def __init__(self,
                  slack_token,
                  random_reply_flg=False,
+                 random_gif_flg=False,
                  set_typing_flg=False,
                  mark_read_flg=False,
                  someones_talking_about_you_flg=False,
@@ -25,6 +27,7 @@ class SlackEventHandler:
         """
         :param slack_token: (str) API token to connect to Slack
         :param random_reply_flg: (Bool) True if you want the handler to perform the random_reply handling
+        :param random_gif_flg: (Bool) True if you want the handler to turn your random replies into gifs
         :param set_typing_flg: (Bool) True if you want the handler to perform the set_typing handling
         :param mark_read_flg: (Bool) True if you want the handler to perform the mark_read handling
         :param someones_talking_about_you_flg: (Bool) True if you want the handler to perform someones_talking_about_you
@@ -37,6 +40,7 @@ class SlackEventHandler:
         """
         self.slack_token = slack_token
         self.random_reply_flg = random_reply_flg
+        self.random_gif_flg = random_gif_flg
         self.set_typing_flg = set_typing_flg
         self.mark_read_flg = mark_read_flg
         self.someones_talking_about_you_flg = someones_talking_about_you_flg
@@ -144,7 +148,15 @@ class SlackEventHandler:
                 event[0]['type'] == 'message' and \
                     event[0]['user'] in self.users:
                 randint = random.randint(0, len(self.responses) - 1)
-                sc.rtm_send_message(event[0]['channel'], self.responses[randint])
+
+                message = self.responses[randint]
+                if self.random_gif_flg:
+                    g = giphypop.Giphy()
+                    message = "{m}\n{v}".format(
+                        v=[x for x in g.search(message)][0],
+                        m=message)
+                    print(message)
+                sc.rtm_send_message(event[0]['channel'], message)
 
         except KeyError:
             if 'type' not in event[0].keys():
