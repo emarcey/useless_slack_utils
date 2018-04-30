@@ -100,8 +100,6 @@ class SlackEventHandler:
                             event[0]['type'] == 'message' and \
                             event[0]['user'] in self.users:
                 randint = random.randint(0, len(self.responses) - 1)
-                channel_info = sc.api_call('channels.info',channel=event[0]['channel'])
-                logger.debug(channel_info)
                 sc.rtm_send_message(event[0]['channel'],
                                     self.responses[randint])
         except KeyError:
