@@ -11,6 +11,7 @@ Implemented:
   
 Planned:
   - Set_Typing: whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
+  - Someones_Talking_About_You: if client user's messages contain the name of another user on the slack environment, send them a dm with the contents of the message and the parties involved
 
 ## Installation
 
