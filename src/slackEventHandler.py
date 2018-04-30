@@ -63,7 +63,7 @@ class SlackEventHandler:
                 'Thanks for letting me know.',
                 'I\'ll be sure to follow up on that.'
             ]
-        self.stay_channel=stay_channel
+        self.stay_channel = stay_channel
 
     def begin(self, length=-1):
         """
@@ -109,9 +109,9 @@ class SlackEventHandler:
                                 if self.mark_read_flg:
                                     self.mark_read(sc, event, msg_type)
                                 if self.someones_talking_about_you_flg:
-                                    self.someones_talking_about_you(sc, event, msg_type,all_users)
+                                    self.someones_talking_about_you(sc, event, msg_type, all_users)
                                 if self.magic_eight_flg:
-                                    self.magic_eight(sc,event)
+                                    self.magic_eight(sc, event)
                             else:
                                 logger.debug("Message not in scope.")
                         time.sleep(1)
@@ -221,10 +221,8 @@ class SlackEventHandler:
                         users_to_notify.append(user)
 
                 if len(users_to_notify) > 0:
-                    im_list = sc.api_call("im.list")
                     user_ids = [user['id'] for user in users_to_notify]
 
-                    v_len = len(users_to_notify)
                     not_all_users_in_convo = False
                     convo_members = sc.api_call("conversations.members", channel=event[0]['channel'])
                     for user in user_ids:
@@ -261,10 +259,10 @@ class SlackEventHandler:
         try:
             if event and \
                 event[0]['type'] == 'message' and \
-                    (event[0]['user'] in self.users or self.users=='All'):
+                    (event[0]['user'] in self.users or self.users == "All"):
                 randint = random.randint(0, 10)
-                print(find_element_in_string(event[0]['text'],'?'))
-                if find_element_in_string(event[0]['text'],'?') >= 0:
+                print(find_element_in_string(event[0]['text'], '?'))
+                if find_element_in_string(event[0]['text'], '?') >= 0:
                     g = giphypop.Giphy()
                     message = "{v}\n".format(v=[x for x in g.search('magic eight ball')][randint])
                     logger.debug("TEXT: "+event[0]['text'])
