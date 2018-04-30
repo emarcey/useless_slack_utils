@@ -19,6 +19,7 @@ class SlackEventHandler:
                  set_typing_flg=False,
                  mark_read_flg=False,
                  someones_talking_about_you_flg=False,
+                 magic_eight_flg=False,
                  run_level="DM Only",
                  users=None,
                  responses=None,
@@ -32,6 +33,7 @@ class SlackEventHandler:
         :param mark_read_flg: (Bool) True if you want the handler to perform the mark_read handling
         :param someones_talking_about_you_flg: (Bool) True if you want the handler to perform someones_talking_about_you
             handling
+        :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
         :param users: ([str]) List of users for whom events should be handled
@@ -44,6 +46,7 @@ class SlackEventHandler:
         self.set_typing_flg = set_typing_flg
         self.mark_read_flg = mark_read_flg
         self.someones_talking_about_you_flg = someones_talking_about_you_flg
+        self.magic_eight_flg = magic_eight_flg
         self.run_level = run_level
         self.users = users
         if responses:
@@ -107,6 +110,8 @@ class SlackEventHandler:
                                     self.mark_read(sc, event, msg_type)
                                 if self.someones_talking_about_you_flg:
                                     self.someones_talking_about_you(sc, event, msg_type,all_users)
+                                if self.magic_eight_flg:
+                                    self.magic_eight(sc,event)
                             else:
                                 logger.debug("Message not in scope.")
                         time.sleep(1)
@@ -239,6 +244,33 @@ class SlackEventHandler:
                                    t=text)
 
                         sc.rtm_send_message(self.stay_channel, message)
+
+        except KeyError:
+            if 'type' not in event[0].keys():
+                logger.debug("Don't worry about this one.")
+                logger.debug(event)
+            else:
+                raise
+
+    def magic_eight(self, sc, event):
+        """
+        :param sc: SlackClient used to connect to server
+        :param event: event to be handled by the random_reply
+        :return:
+        """
+        try:
+            if event and \
+                event[0]['type'] == 'message' and \
+                    event[0]['user'] in self.users:
+                randint = random.randint(0, 10)
+                print(find_element_in_string(event[0]['text'],'?'))
+                if find_element_in_string(event[0]['text'],'?') >= 0:
+                    g = giphypop.Giphy()
+                    message = "{v}\n".format(v=[x for x in g.search('magic eight ball')][randint])
+                    logger.debug("TEXT: "+event[0]['text'])
+                    sc.rtm_send_message(event[0]['channel'], message)
+                else:
+                    logger.debug("No question mark found")
 
         except KeyError:
             if 'type' not in event[0].keys():
