@@ -7,8 +7,9 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
 
 Implemented:
   - Random_Reply: send a random reply to a user from a list any time they message you
+    - Message Type: All
   - Mark_Read: For all those pesky notifications where your coworkers hit @channel on meaningless stuff. Mark those as read and ignore them.
-  - Message Type: IMs
+    - Message Type: IMs
   
 Planned:
   - Set_Typing: whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
