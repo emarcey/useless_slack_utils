@@ -2,10 +2,11 @@ import logging
 import time
 import random
 from slackclient import SlackClient
+import giphypop
+
 from src.str_utils import find_element_in_string, strip_punctuation
 from src.misc_utils import load_homophones
-import giphypop
-import string
+from src.exceptions import InvalidFlagNameException
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -47,13 +48,16 @@ class SlackEventHandler:
         :param init_homophones: (dict) override dictionary of homophones to use
         """
         self.slack_token = slack_token
-        self.random_reply_flg = random_reply_flg
-        self.random_gif_flg = random_gif_flg
-        self.set_typing_flg = set_typing_flg
-        self.mark_read_flg = mark_read_flg
-        self.someones_talking_about_you_flg = someones_talking_about_you_flg
-        self.magic_eight_flg = magic_eight_flg
-        self.homophone_flg = homophone_flg
+        self.handler_flags = {
+            'random_reply_flg': random_reply_flg,
+            'random_gif_flg': random_gif_flg,
+            'set_typing_flg': set_typing_flg,
+            'mark_read_flg': mark_read_flg,
+            'someones_talking_about_you_flg': someones_talking_about_you_flg,
+            'magic_eight_flg': magic_eight_flg,
+            'homophone_flg': homophone_flg
+        }
+
         self.run_level = run_level
         if users == 'All':
             sc = SlackClient(self.slack_token)
@@ -80,6 +84,32 @@ class SlackEventHandler:
             self.homophones = load_homophones(init_homophones)
         else:
             self.homophones = None
+
+    def update_flag(self, flag_name, flag_value):
+        """
+        Updates the value for the given flag
+
+        :param flag_name: (str) name of flag to update
+        :param flag_value: (str) new value for flag
+        :return:
+        """
+
+        try:
+            if flag_name not in self.handler_flags.keys():
+                message = "\n{f} is not in list of flags.\nAcceptable flag names are: {n}.".\
+                    format(f=flag_name,
+                           n=', '.join(self.handler_flags.keys()))
+                raise InvalidFlagNameException(message=message)
+            self.handler_flags[flag_name] = flag_value
+
+            if flag_name == 'homophone_flg' and flag_value:
+                self.homophones = load_homophones()
+            else:
+                self.homophones = None
+
+        except InvalidFlagNameException as e:
+            logger.error(e.message)
+            raise
 
     def begin(self, length=-1):
         """
@@ -122,15 +152,15 @@ class SlackEventHandler:
                                     self.run_level == 'All':
 
                                 # if message is in correct scope, perform designated tasks
-                                if self.random_reply_flg:
+                                if self.handler_flags['random_reply_flg']:
                                     self.random_reply(sc, event)
-                                if self.mark_read_flg:
+                                if self.handler_flags['mark_read_flg']:
                                     self.mark_read(sc, event, msg_type)
-                                if self.someones_talking_about_you_flg:
+                                if self.handler_flags['someones_talking_about_you_flg']:
                                     self.someones_talking_about_you(sc, event, msg_type, all_users)
-                                if self.magic_eight_flg:
+                                if self.handler_flags['magic_eight_flg']:
                                     self.magic_eight(sc, event)
-                                if self.homophone_flg:
+                                if self.handler_flags['homophone_flg']:
                                     self.homophone_suggest(sc, event)
                             else:
                                 logger.debug("Message not in scope.")
@@ -181,12 +211,12 @@ class SlackEventHandler:
                 randint = random.randint(0, len(self.responses) - 1)
 
                 message = self.responses[randint]
-                if self.random_gif_flg:
+                if self.handler_flags['random_gif_flg']:
                     g = giphypop.Giphy()
                     message = "{m}\n{v}".format(
                         v=[x for x in g.search(message)][0],
                         m=message)
-                    
+
                 sc.rtm_send_message(event[0]['channel'], message)
 
         except KeyError:
@@ -326,7 +356,7 @@ class SlackEventHandler:
             text_words = [strip_punctuation(word) for word in
                           event[0]['text'].lower().split(' ')
                           if strip_punctuation(word) in self.homophones.keys()]
-            
+
             for word in text_words:
                 message = "Hey <@{u}>!\n\tYou typed {k}, but you probably meant {v}.".\
                     format(u=event[0]['user'],
