@@ -239,11 +239,12 @@ class SlackEventHandler:
                         
                         <@{c}> were talking about you in a private message!
                         
-                        Here's what they said:
+                        Here's what <@{s}> said:
                         
                         {t}
                         """.format(u="> <@".join(user_ids),
                                    c="> <@".join([cv for cv in convo_members['members']]),
+                                   s=event[0]['user'],
                                    t=text)
 
                         sc.rtm_send_message(self.stay_channel, message)
