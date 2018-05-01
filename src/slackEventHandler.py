@@ -6,7 +6,7 @@ import giphypop
 
 from src.str_utils import find_element_in_string, strip_punctuation
 from src.misc_utils import load_homophones
-from src.exceptions import InvalidFlagNameException
+from src import exceptions
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -99,7 +99,7 @@ class SlackEventHandler:
                 message = "\n{f} is not in list of flags.\nAcceptable flag names are: {n}.".\
                     format(f=flag_name,
                            n=', '.join(self.handler_flags.keys()))
-                raise InvalidFlagNameException(message=message)
+                raise exceptions.InvalidFlagNameException(message=message)
             self.handler_flags[flag_name] = flag_value
 
             if flag_name == 'homophone_flg' and flag_value:
@@ -107,9 +107,33 @@ class SlackEventHandler:
             else:
                 self.homophones = None
 
-        except InvalidFlagNameException as e:
+        except exceptions.InvalidFlagNameException as e:
             logger.error(e.message)
             raise
+
+    def add_responses(self,new_responses):
+        """
+        Add 1+ responses for the random_reply method
+
+        :param new_responses: 2 possible types:
+            - str: single response to add
+            - list: multiple responses to add
+        :return:
+        """
+        try:
+            if type(new_responses) == str and new_responses not in self.responses:
+                self.responses.append(new_responses)
+            elif type(new_responses) == list:
+                self.responses += new_responses
+                self.responses = list(set(self.responses))
+            else:
+                msg = "Passed data type {dt} to method 'add_responses.' Only str or list allowed.".\
+                    format(dt=type(new_responses))
+                raise exceptions.TypeNotHandledException(msg)
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
+
 
     def begin(self, length=-1):
         """
