@@ -48,7 +48,12 @@ class SlackEventHandler:
         self.someones_talking_about_you_flg = someones_talking_about_you_flg
         self.magic_eight_flg = magic_eight_flg
         self.run_level = run_level
-        self.users = users
+        if users == 'All':
+            sc = SlackClient(self.slack_token)
+            sc.rtm_connect()
+            self.users = [user['id'] for user in sc.api_call("users.list")['members']]
+        else:
+            self.users = users
         if responses:
             self.responses = responses
         else:
@@ -151,7 +156,7 @@ class SlackEventHandler:
         try:
             if event and \
                 event[0]['type'] == 'message' and \
-                    (event[0]['user'] in self.users or self.users == 'All'):
+                    (event[0]['user'] in self.users):
                 randint = random.randint(0, len(self.responses) - 1)
 
                 message = self.responses[randint]
@@ -213,7 +218,7 @@ class SlackEventHandler:
         try:
             users_to_notify = []
 
-            if event[0]['type'] == 'message' and msg_type == 'IM':
+            if event[0]['type'] == 'message' and msg_type != 'Public':
                 text = event[0]['text']
                 for user in all_users:
                     if find_element_in_string(text.lower(),
@@ -259,7 +264,7 @@ class SlackEventHandler:
         try:
             if event and \
                 event[0]['type'] == 'message' and \
-                    (event[0]['user'] in self.users or self.users == "All"):
+                    (event[0]['user'] in self.users):
                 randint = random.randint(0, 10)
                 print(find_element_in_string(event[0]['text'], '?'))
                 if find_element_in_string(event[0]['text'], '?') >= 0:
