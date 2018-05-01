@@ -15,8 +15,9 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
   - **Magic_8_Ball:** whenever someone asks you a question, send a magic 8 ball giphy
   
 ### Planned:
-  - Set_Typing: whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
-
+  - **Set_Typing:** whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
+  - **Someones_Talking_About_You:** add support for the following:
+    - message tells you who sent the incriminating message, not just the group
 
 ## Installation
 
