@@ -47,9 +47,10 @@ class SlackEventHandler:
         :param stay_channel: (str) channel to use if you're doing someones_talking_about_you
         :param init_homophones: (dict) override dictionary of homophones to use
         """
-        self.slack_token = slack_token
-        self.handler_flags = {}
+        self.slack_token = None
+        self.update_slack_token(slack_token)
 
+        # handle flags for handling methods
         self.handler_flags = {
             'random_reply_flg': False,
             'random_gif_flg': False,
@@ -68,30 +69,115 @@ class SlackEventHandler:
         self.update_flag('magic_eight_flg', magic_eight_flg)
         self.update_flag('homophone_flg', homophone_flg)
 
+        # handle run_level
+        self.run_level = None
+        self.update_run_level(run_level)
 
-        self.run_level = run_level
-        if users == 'All':
-            sc = SlackClient(self.slack_token)
-            sc.rtm_connect()
-            self.users = [user['id'] for user in sc.api_call("users.list")['members']]
-        else:
-            self.users = users
-        if responses:
-            self.responses = responses
-        else:
-            # default responses if none provided
-            self.responses = [
-                'Wow! That\'s so interesting!',
-                'What hilarious hijinx you\'ve been getting up to!',
-                'Where has the time gone?',
-                'Curious',
-                'I\'ve never thought of it that way.',
-                'I\'ll keep that in mind.',
-                'Thanks for letting me know.',
-                'I\'ll be sure to follow up on that.'
-            ]
-        self.stay_channel = stay_channel
+        # handle users
+        try:
+            if users == 'All':
+                sc = SlackClient(self.slack_token)
+                sc.rtm_connect()
+                self.users = [user['id'] for user in sc.api_call("users.list")['members']]
+            elif type(users) == list:
+                self.users = users
+            else:
+                msg = "Passed data type {dt} to method 'add_users.' Only str or list allowed.". \
+                    format(dt=type(users))
+                raise exceptions.TypeNotHandledException(msg)
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
+
+        # handle responses
+        try:
+            if responses and type(responses) == list:
+                self.responses = responses
+            elif responses:
+                msg = "Passed data type {dt} to method 'add_responses.' Only str or list allowed.". \
+                    format(dt=type(responses))
+                raise exceptions.TypeNotHandledException(msg)
+            else:
+                # default responses if none provided
+                self.responses = [
+                    'Wow! That\'s so interesting!',
+                    'What hilarious hijinx you\'ve been getting up to!',
+                    'Where has the time gone?',
+                    'Curious',
+                    'I\'ve never thought of it that way.',
+                    'I\'ll keep that in mind.',
+                    'Thanks for letting me know.',
+                    'I\'ll be sure to follow up on that.'
+                ]
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
+
+        # handle stay channel
+        self.stay_channel = None
+        self.update_stay_channel(stay_channel)
+
         self.homophones = load_homophones(init_homophones)
+
+    def update_run_level(self, new_run_level):
+        """
+        Update the run_level for the handler
+
+        :param new_run_level: (str) new value for run level
+        :return: None
+        """
+        try:
+            if new_run_level not in ("DM Only", "Private", "All"):
+                msg = "Invalid Value for new run_level, {v}.\nAccepted values are ('DM Only','Private','All')".\
+                    format(v=new_run_level)
+                raise ValueError(msg)
+            else:
+                self.run_level = new_run_level
+
+        except ValueError as e:
+            logger.error(e.message)
+            raise
+
+    def update_stay_channel(self, new_stay_channel):
+        """
+        Update the stay_channel for the handler
+
+        :param new_stay_channel: (str) new value for stay channel
+        :return: None
+        """
+
+        try:
+
+            if type(new_stay_channel) != str:
+                msg = "Passed data type {dt} to method 'update_stay_channel.' Only str allowed.". \
+                    format(dt=type(new_stay_channel))
+                raise exceptions.TypeNotHandledException(msg)
+            else:
+                self.stay_channel = new_stay_channel
+
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
+
+    def update_slack_token(self, new_slack_token):
+        """
+        Update the new_slack_token for the handler
+
+        :param new_slack_token: (str) new value for slack token
+        :return: None
+        """
+
+        try:
+            if type(new_slack_token) != str:
+                msg = "Passed data type {dt} to method 'update_slack_token.' Only str allowed.". \
+                    format(dt=type(new_slack_token))
+                raise exceptions.TypeNotHandledException(msg)
+            else:
+                self.slack_token = new_slack_token
+
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
 
     def update_flag(self, flag_name, flag_value):
         """
@@ -126,7 +212,7 @@ class SlackEventHandler:
         :param new_responses: 2 possible types:
             - str: single response to add
             - list: multiple responses to add
-        :return:
+        :return: None
         """
         try:
             if type(new_responses) == str and new_responses not in self.responses:
@@ -148,7 +234,7 @@ class SlackEventHandler:
         :param new_homophones: (dict) new homophones to add
         :param override_flg: (Bool) if True, then if there is a conflict between new and old dicts, replace old.
             If false, keep old.
-        :return:
+        :return: None
         """
 
         try:
@@ -170,6 +256,34 @@ class SlackEventHandler:
                     format(dt=type(new_homophones))
                 raise exceptions.TypeNotHandledException(msg)
 
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
+
+    def add_users(self, new_users):
+        """
+        Adds one or more users to the approved user list
+
+        :param new_users: 2 types:
+            - (str): single new user to add, or 'All', denoting that all users should be added
+            - (list): list of new users to add
+        :return: None
+        """
+
+        try:
+            if type(new_users) == str and new_users == 'All':
+                sc = SlackClient(self.slack_token)
+                sc.rtm_connect()
+                self.users = [user['id'] for user in sc.api_call("users.list")['members']]
+            if type(new_users) == str and new_users not in self.users:
+                self.users.append(new_users)
+            elif type(new_users) == list:
+                self.users += new_users
+                self.users = list(set(self.users))
+            else:
+                msg = "Passed data type {dt} to method 'add_users.' Only str or list allowed.".\
+                    format(dt=type(new_users))
+                raise exceptions.TypeNotHandledException(msg)
         except exceptions.TypeNotHandledException as e:
             logger.error(e.message)
             raise

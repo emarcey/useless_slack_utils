@@ -54,4 +54,5 @@ seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
                         stay_channel='slack_py_test'
                         )
 
+seh.update_slack_token("adfadf")
 seh.begin()
