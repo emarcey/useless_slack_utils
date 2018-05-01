@@ -14,6 +14,7 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
   - **Someones_Talking_About_You:** if client user's messages contain the name of another user on the slack environment, post a message in a selected channel with the contents of the message and the parties involved all tagged
     - the user who sent the message is now identified
   - **Magic_8_Ball:** whenever someone asks you a question, send a magic 8 ball giphy
+  - **Homophone_Suggest:** whenever a homophone is found, suggest the opposite
   
 ### Planned:
   - **Set_Typing:** whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
