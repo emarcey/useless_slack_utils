@@ -48,15 +48,26 @@ class SlackEventHandler:
         :param init_homophones: (dict) override dictionary of homophones to use
         """
         self.slack_token = slack_token
+        self.handler_flags = {}
+
         self.handler_flags = {
-            'random_reply_flg': random_reply_flg,
-            'random_gif_flg': random_gif_flg,
-            'set_typing_flg': set_typing_flg,
-            'mark_read_flg': mark_read_flg,
-            'someones_talking_about_you_flg': someones_talking_about_you_flg,
-            'magic_eight_flg': magic_eight_flg,
-            'homophone_flg': homophone_flg
+            'random_reply_flg': False,
+            'random_gif_flg': False,
+            'set_typing_flg': False,
+            'mark_read_flg': False,
+            'someones_talking_about_you_flg': False,
+            'magic_eight_flg': False,
+            'homophone_flg': False
         }
+
+        self.update_flag('random_reply_flg', random_reply_flg)
+        self.update_flag('random_gif_flg', random_gif_flg)
+        self.update_flag('set_typing_flg', set_typing_flg)
+        self.update_flag('mark_read_flg', mark_read_flg)
+        self.update_flag('someones_talking_about_you_flg', someones_talking_about_you_flg)
+        self.update_flag('magic_eight_flg', magic_eight_flg)
+        self.update_flag('homophone_flg', homophone_flg)
+
 
         self.run_level = run_level
         if users == 'All':
@@ -92,7 +103,12 @@ class SlackEventHandler:
         """
 
         try:
-            if flag_name not in self.handler_flags.keys():
+            if type(flag_value) != bool:
+                msg = "\nInvalid data entered for flag_name, {fn}, in method 'update_flag'.".format(fn=flag_name)
+                msg += "\nReceived data type, {dt}, with value {v}.".format(dt=type(flag_value),v=str(flag_value))
+                msg += "\nOnly Boolean value accepted"
+                raise exceptions.TypeNotHandledException(msg)
+            elif flag_name not in self.handler_flags.keys():
                 message = "\n{f} is not in list of flags.\nAcceptable flag names are: {n}.".\
                     format(f=flag_name,
                            n=', '.join(self.handler_flags.keys()))
