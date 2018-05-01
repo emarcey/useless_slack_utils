@@ -186,7 +186,7 @@ class SlackEventHandler:
                     message = "{m}\n{v}".format(
                         v=[x for x in g.search(message)][0],
                         m=message)
-                    print(message)
+                    
                 sc.rtm_send_message(event[0]['channel'], message)
 
         except KeyError:
@@ -298,7 +298,6 @@ class SlackEventHandler:
                 event[0]['type'] == 'message' and \
                     (event[0]['user'] in self.users):
                 randint = random.randint(0, 10)
-                print(find_element_in_string(event[0]['text'], '?'))
                 if find_element_in_string(event[0]['text'], '?') >= 0:
                     g = giphypop.Giphy()
                     message = "{v}\n".format(v=[x for x in g.search('magic eight ball')][randint])
@@ -327,7 +326,7 @@ class SlackEventHandler:
             text_words = [strip_punctuation(word) for word in
                           event[0]['text'].lower().split(' ')
                           if strip_punctuation(word) in self.homophones.keys()]
-            print(text_words)
+            
             for word in text_words:
                 message = "Hey <@{u}>!\n\tYou typed {k}, but you probably meant {v}.".\
                     format(u=event[0]['user'],
