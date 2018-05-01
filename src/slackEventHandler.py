@@ -80,10 +80,7 @@ class SlackEventHandler:
                 'I\'ll be sure to follow up on that.'
             ]
         self.stay_channel = stay_channel
-        if homophone_flg:
-            self.homophones = load_homophones(init_homophones)
-        else:
-            self.homophones = None
+        self.homophones = load_homophones(init_homophones)
 
     def update_flag(self, flag_name, flag_value):
         """
@@ -101,11 +98,6 @@ class SlackEventHandler:
                            n=', '.join(self.handler_flags.keys()))
                 raise exceptions.InvalidFlagNameException(message=message)
             self.handler_flags[flag_name] = flag_value
-
-            if flag_name == 'homophone_flg' and flag_value:
-                self.homophones = load_homophones()
-            else:
-                self.homophones = None
 
         except exceptions.InvalidFlagNameException as e:
             logger.error(e.message)
@@ -134,6 +126,37 @@ class SlackEventHandler:
             logger.error(e.message)
             raise
 
+    def add_homophones(self, new_homophones, override_flg=True):
+        """
+        add_homophones adds additional homophones to the existing dictionary
+        :param new_homophones: (dict) new homophones to add
+        :param override_flg: (Bool) if True, then if there is a conflict between new and old dicts, replace old.
+            If false, keep old.
+        :return:
+        """
+
+        try:
+            if type(new_homophones) == dict:
+                new_homophones = load_homophones(new_homophones)
+                for nh in new_homophones:
+                    nh_exists = nh in self.homophones.keys()
+                    if override_flg or not nh_exists:
+                        if nh_exists:
+                            tmp = self.homophones[nh]
+                        self.homophones[nh] = new_homophones[nh]
+
+                        # remove old match if overriding
+                        if override_flg and nh_exists:
+                            del self.homophones[tmp]
+
+            else:
+                msg = "Passed data type {dt} to method 'add_homophones.' Only dict allowed.". \
+                    format(dt=type(new_homophones))
+                raise exceptions.TypeNotHandledException(msg)
+
+        except exceptions.TypeNotHandledException as e:
+            logger.error(e.message)
+            raise
 
     def begin(self, length=-1):
         """

@@ -40,13 +40,13 @@ responses = [
 ]
 
 seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
-                        random_reply_flg=False,
+                        random_reply_flg=True,
                         random_gif_flg=False,
                         set_typing_flg=False,
                         mark_read_flg=False,
-                        someones_talking_about_you_flg=True,
+                        someones_talking_about_you_flg=False,
                         magic_eight_flg=False,
-                        homophone_flg=True,
+                        homophone_flg=False,
                         run_level="Private",
                         #users=users,
                         users='All',
@@ -54,4 +54,4 @@ seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
                         stay_channel='slack_py_test'
                         )
 
-#seh.begin()
+seh.begin()
