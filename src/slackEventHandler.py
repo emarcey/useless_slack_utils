@@ -24,6 +24,7 @@ class SlackEventHandler:
                  someones_talking_about_you_flg=False,
                  magic_eight_flg=False,
                  homophone_flg=False,
+                 handler_flags=None,
                  run_level="DM Only",
                  users=None,
                  responses=None,
@@ -40,6 +41,7 @@ class SlackEventHandler:
             handling
         :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
         :param homophone_flg: (Bool) True if you want the handler to perform homophone_suggest
+        :param handler_flags: (Dict) Dictionary of handler flags; alternative to passing each flag
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
         :param users: ([str]) List of users for whom events should be handled, or 'All'; defaults to None
@@ -61,13 +63,24 @@ class SlackEventHandler:
             'homophone_flg': False
         }
 
-        self.update_flag('random_reply_flg', random_reply_flg)
-        self.update_flag('random_gif_flg', random_gif_flg)
-        self.update_flag('set_typing_flg', set_typing_flg)
-        self.update_flag('mark_read_flg', mark_read_flg)
-        self.update_flag('someones_talking_about_you_flg', someones_talking_about_you_flg)
-        self.update_flag('magic_eight_flg', magic_eight_flg)
-        self.update_flag('homophone_flg', homophone_flg)
+        if handler_flags:
+            try:
+                for flg in handler_flags:
+                    if flg in self.handler_flags.keys():
+                        self.handler_flags[flg] = handler_flags[flg]
+                    else:
+                        raise KeyError
+            except KeyError:
+                logging.debug("Flag {f} is not a valid handling method. It will not be included in the event handler.".
+                              format(f=flg))
+        else:
+            self.update_flag('random_reply_flg', random_reply_flg)
+            self.update_flag('random_gif_flg', random_gif_flg)
+            self.update_flag('set_typing_flg', set_typing_flg)
+            self.update_flag('mark_read_flg', mark_read_flg)
+            self.update_flag('someones_talking_about_you_flg', someones_talking_about_you_flg)
+            self.update_flag('magic_eight_flg', magic_eight_flg)
+            self.update_flag('homophone_flg', homophone_flg)
 
         # handle run_level
         self.run_level = None
