@@ -29,8 +29,7 @@ class SlackEventHandler:
                  users=None,
                  responses=None,
                  stay_channel=None,
-                 init_homophones=None
-                 ):
+                 init_homophones=None):
         """
         :param slack_token: (str) API token to connect to Slack
         :param random_reply_flg: (Bool) True if you want the handler to perform the random_reply handling
