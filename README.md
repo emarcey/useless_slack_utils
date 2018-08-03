@@ -15,6 +15,7 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
     - the user who sent the message is now identified
   - **Magic_8_Ball:** whenever someone asks you a question, send a magic 8 ball giphy
   - **Homophone_Suggest:** whenever a homophone is found, suggest the opposite
+  - **Reading_Level:** Calculates the estimated reading level of a comment based on the [Flesch-Kincaid Grade Level Score](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests#Flesch%E2%80%93Kincaid_grade_level) and responds in that channel.
   
 ### Planned:
   - **Set_Typing:** whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
