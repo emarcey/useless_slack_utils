@@ -3,6 +3,7 @@ import time
 import random
 from slackclient import SlackClient
 import giphypop
+import re
 
 from src.str_utils import find_element_in_string, strip_punctuation
 from src.misc_utils import load_homophones
@@ -24,12 +25,14 @@ class SlackEventHandler:
                  someones_talking_about_you_flg=False,
                  magic_eight_flg=False,
                  homophone_flg=False,
+                 reading_level_flg=False,
                  handler_flags=None,
                  run_level="DM Only",
                  users=None,
                  responses=None,
                  stay_channel=None,
-                 init_homophones=None):
+                 init_homophones=None,
+                 min_words=10):
         """
         :param slack_token: (str) API token to connect to Slack
         :param random_reply_flg: (Bool) True if you want the handler to perform the random_reply handling
@@ -40,6 +43,7 @@ class SlackEventHandler:
             handling
         :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
         :param homophone_flg: (Bool) True if you want the handler to perform homophone_suggest
+        :param reading_level_flg: (Bool) True if you want the handler to perform reading_level
         :param handler_flags: (Dict) Dictionary of handler flags; alternative to passing each flag
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
@@ -47,7 +51,9 @@ class SlackEventHandler:
         :param responses: ([str]) If using the random_reply, this is the list of custom responses
         :param stay_channel: (str) channel to use if you're doing someones_talking_about_you
         :param init_homophones: (dict) override dictionary of homophones to use
+        :param min_words: (int) minimum number of words allows for a reading_level check
         """
+
         self.slack_token = None
         self.update_slack_token(slack_token)
 
@@ -59,7 +65,8 @@ class SlackEventHandler:
             'mark_read_flg': False,
             'someones_talking_about_you_flg': False,
             'magic_eight_flg': False,
-            'homophone_flg': False
+            'homophone_flg': False,
+            'reading_level_flg': False
         }
 
         if handler_flags:
@@ -80,6 +87,7 @@ class SlackEventHandler:
             self.update_flag('someones_talking_about_you_flg', someones_talking_about_you_flg)
             self.update_flag('magic_eight_flg', magic_eight_flg)
             self.update_flag('homophone_flg', homophone_flg)
+            self.update_flag('reading_level_flg', reading_level_flg)
 
         # handle run_level
         self.run_level = None
@@ -130,6 +138,13 @@ class SlackEventHandler:
         self.update_stay_channel(stay_channel)
 
         self.homophones = load_homophones(init_homophones)
+
+        try:
+            if isinstance(min_words, int):
+                self.min_words = min_words
+        except TypeError:
+            logger.error("Invalid type {t} for min_words; expected int".format(t=type(min_words)))
+            raise
 
     def update_run_level(self, new_run_level):
         """
@@ -217,7 +232,7 @@ class SlackEventHandler:
             logger.error(e.message)
             raise
 
-    def add_responses(self,new_responses):
+    def add_responses(self, new_responses):
         """
         Add 1+ responses for the random_reply method
 
@@ -351,6 +366,8 @@ class SlackEventHandler:
                                     self.magic_eight(sc, event)
                                 if self.handler_flags['homophone_flg']:
                                     self.homophone_suggest(sc, event)
+                                if self.handler_flags['reading_level_flg']:
+                                    self.reading_level(sc, event)
                             else:
                                 logger.debug("Message not in scope.")
                         time.sleep(1)
@@ -552,6 +569,38 @@ class SlackEventHandler:
                            k=word,
                            v=self.homophones[word])
                 sc.rtm_send_message(event[0]['channel'], message)
+
+        except KeyError:
+            if 'type' not in event[0].keys():
+                logger.debug("Don't worry about this one.")
+                logger.debug(event)
+            else:
+                raise
+
+    def reading_level(self, sc, event):
+        """
+        Calculate the reading level of a given comment
+        :param sc: SlackClient used to connect to server
+        :param event: event to be handled by the method
+        :return:
+        """
+        try:
+            text = event[0]['text'].lower()
+            sentences = len(re.findall(r'[!?\.]', text))
+            if sentences == 0:
+                sentences = 1
+            words = text.split()
+
+            if len(words) < self.min_words:
+                logger.debug("Message too short for reading_level calculation.")
+                return
+
+            syllables = sum([len(re.findall(r'[aeiouy]+', x.rstrip('e'))) for x in words])
+            reading_level = 0.39*(len(words)/sentences) + 11.8*(syllables/len(words)) - 15.59
+
+            message = "Your comment has an estimated Flesch-Kincaid grade level of {x}.".\
+                format(x=int(round(reading_level)))
+            sc.rtm_send_message(event[0]['channel'], message)
 
         except KeyError:
             if 'type' not in event[0].keys():
