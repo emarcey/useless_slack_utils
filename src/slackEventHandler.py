@@ -633,6 +633,11 @@ class SlackEventHandler:
                 r = get_request(songs[n])
                 artist, song = get_artist_song(r)
                 lyrics = get_lyrics(r)
+                message = "How about {s} by {a}".format(s=song, a=artist)
+                sc.rtm_send_message(event[0]['channel'], message)
+
+                for line in lyrics:
+                    sc.rtm_send_message(event[0]['channel'], line)
 
         except KeyError:
             if 'type' not in event[0].keys():
