@@ -16,7 +16,8 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
   - **Magic_8_Ball:** whenever someone asks you a question, send a magic 8 ball giphy
   - **Homophone_Suggest:** whenever a homophone is found, suggest the opposite
   - **Reading_Level:** Calculates the estimated reading level of a comment based on the [Flesch-Kincaid Grade Level Score](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests#Flesch%E2%80%93Kincaid_grade_level) and responds in that channel.
-  
+  - **Sing_to_Me:** Chooses a random song from the list of popular songs on [Genius](https://genius.com) and messages each line.
+
 ### Planned:
   - **Set_Typing:** whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
 

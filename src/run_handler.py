@@ -42,14 +42,15 @@ if __name__ == '__main__':
 
     seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
                             handler_flags = {
-                'random_reply_flg': False,
-                'random_gif_flg': False,
-                'set_typing_flg': False,
-                'mark_read_flg': False,
-                'someones_talking_about_you_flg': False,
-                'magic_eight_flg': False,
-                'homophone_flg': False,
-                'reading_level_flg': True
+                                'random_reply_flg': False,
+                                'random_gif_flg': False,
+                                'set_typing_flg': False,
+                                'mark_read_flg': False,
+                                'someones_talking_about_you_flg': False,
+                                'magic_eight_flg': False,
+                                'homophone_flg': False,
+                                'reading_level_flg': False,
+                                'sing_to_me_flg': True
             },
                             run_level="Private",
                             #users=users,

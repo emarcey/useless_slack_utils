@@ -1,7 +1,6 @@
 import requests
 from src import exceptions
 import logging
-from lxml import html
 
 logger = logging.getLogger()
 logging.basicConfig()

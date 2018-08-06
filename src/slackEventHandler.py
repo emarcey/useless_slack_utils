@@ -47,7 +47,7 @@ class SlackEventHandler:
         :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
         :param homophone_flg: (Bool) True if you want the handler to perform homophone_suggest
         :param reading_level_flg: (Bool) True if you want the handler to perform reading_level
-        :param sing_to_me: (Bool) True if you want the handler to perform sing_to_me
+        :param sing_to_me_flg: (Bool) True if you want the handler to perform sing_to_me
         :param handler_flags: (Dict) Dictionary of handler flags; alternative to passing each flag
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
@@ -362,6 +362,8 @@ class SlackEventHandler:
                             if (self.run_level == 'DM Only' and msg_type == 'IM') or \
                                 (self.run_level == 'Private' and msg_type != 'Public') or\
                                     self.run_level == 'All':
+                                print('test')
+                                print(self.handler_flags)
 
                                 # if message is in correct scope, perform designated tasks
                                 if self.handler_flags['random_reply_flg']:
@@ -377,6 +379,7 @@ class SlackEventHandler:
                                 if self.handler_flags['reading_level_flg']:
                                     self.reading_level(sc, event)
                                 if self.handler_flags['sing_to_me_flg']:
+                                    print('test2')
                                     self.sing_to_me(sc, event)
                             else:
                                 logger.debug("Message not in scope.")
@@ -627,6 +630,7 @@ class SlackEventHandler:
         """
         try:
             text = event[0]['text'].lower()
+            print(text)
             if text == 'sing to me':
                 songs = get_top_songs()
                 n = random.randint(0, len(songs)-1)
@@ -637,6 +641,7 @@ class SlackEventHandler:
                 sc.rtm_send_message(event[0]['channel'], message)
 
                 for line in lyrics:
+                    time.sleep(1)
                     sc.rtm_send_message(event[0]['channel'], line)
 
         except KeyError:
@@ -645,5 +650,3 @@ class SlackEventHandler:
                 logger.debug(event)
             else:
                 raise
-
-        pass
