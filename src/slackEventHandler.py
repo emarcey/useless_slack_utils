@@ -7,6 +7,8 @@ import re
 
 from src.str_utils import find_element_in_string, strip_punctuation
 from src.misc_utils import load_homophones
+from src.genius_utils import get_lyrics, get_top_songs, get_artist_song
+from src.request_utils import get_request
 from src import exceptions
 
 logger = logging.getLogger()
@@ -26,6 +28,7 @@ class SlackEventHandler:
                  magic_eight_flg=False,
                  homophone_flg=False,
                  reading_level_flg=False,
+                 sing_to_me_flg=None,
                  handler_flags=None,
                  run_level="DM Only",
                  users=None,
@@ -44,6 +47,7 @@ class SlackEventHandler:
         :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
         :param homophone_flg: (Bool) True if you want the handler to perform homophone_suggest
         :param reading_level_flg: (Bool) True if you want the handler to perform reading_level
+        :param sing_to_me: (Bool) True if you want the handler to perform sing_to_me
         :param handler_flags: (Dict) Dictionary of handler flags; alternative to passing each flag
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
@@ -66,19 +70,21 @@ class SlackEventHandler:
             'someones_talking_about_you_flg': False,
             'magic_eight_flg': False,
             'homophone_flg': False,
-            'reading_level_flg': False
+            'reading_level_flg': False,
+            'sing_to_me_flg': False
         }
 
         if handler_flags:
-            try:
-                for flg in handler_flags:
+            for flg in handler_flags:
+                try:
                     if flg in self.handler_flags.keys():
                         self.handler_flags[flg] = handler_flags[flg]
                     else:
                         raise KeyError
-            except KeyError:
-                logging.debug("Flag {f} is not a valid handling method. It will not be included in the event handler.".
-                              format(f=flg))
+                except KeyError:
+                    logging.debug("Flag {f} is not a valid handling method." +
+                                  " It will not be included in the event handler.".
+                                  format(f=flg))
         else:
             self.update_flag('random_reply_flg', random_reply_flg)
             self.update_flag('random_gif_flg', random_gif_flg)
@@ -88,6 +94,7 @@ class SlackEventHandler:
             self.update_flag('magic_eight_flg', magic_eight_flg)
             self.update_flag('homophone_flg', homophone_flg)
             self.update_flag('reading_level_flg', reading_level_flg)
+            self.update_flag('sing_to_me_flg', sing_to_me_flg)
 
         # handle run_level
         self.run_level = None
@@ -157,12 +164,12 @@ class SlackEventHandler:
             if new_run_level not in ("DM Only", "Private", "All"):
                 msg = "Invalid Value for new run_level, {v}.\nAccepted values are ('DM Only','Private','All')".\
                     format(v=new_run_level)
-                raise ValueError(msg)
+                logger.error(msg)
+                raise ValueError()
             else:
                 self.run_level = new_run_level
 
-        except ValueError as e:
-            logger.error(e.message)
+        except ValueError:
             raise
 
     def update_stay_channel(self, new_stay_channel):
@@ -218,7 +225,7 @@ class SlackEventHandler:
         try:
             if type(flag_value) != bool:
                 msg = "\nInvalid data entered for flag_name, {fn}, in method 'update_flag'.".format(fn=flag_name)
-                msg += "\nReceived data type, {dt}, with value {v}.".format(dt=type(flag_value),v=str(flag_value))
+                msg += "\nReceived data type, {dt}, with value {v}.".format(dt=type(flag_value), v=str(flag_value))
                 msg += "\nOnly Boolean value accepted"
                 raise exceptions.TypeNotHandledException(msg)
             elif flag_name not in self.handler_flags.keys():
@@ -270,6 +277,7 @@ class SlackEventHandler:
                 for nh in new_homophones:
                     nh_exists = nh in self.homophones.keys()
                     if override_flg or not nh_exists:
+                        tmp = None
                         if nh_exists:
                             tmp = self.homophones[nh]
                         self.homophones[nh] = new_homophones[nh]
@@ -368,6 +376,8 @@ class SlackEventHandler:
                                     self.homophone_suggest(sc, event)
                                 if self.handler_flags['reading_level_flg']:
                                     self.reading_level(sc, event)
+                                if self.handler_flags['sing_to_me_flg']:
+                                    self.sing_to_me(sc, event)
                             else:
                                 logger.debug("Message not in scope.")
                         time.sleep(1)
@@ -444,7 +454,6 @@ class SlackEventHandler:
         """
         try:
             if event[0]['type'] == 'message':
-
                 text = event[0]['text']
 
                 if find_element_in_string(text, '<') != -1 and \
@@ -486,7 +495,7 @@ class SlackEventHandler:
                 text = event[0]['text']
                 for user in all_users:
                     if find_element_in_string(text.lower(),
-                                              user['first_name'].lower() + ' ' + user['last_name'].lower()) != -1 :
+                                              user['first_name'].lower() + ' ' + user['last_name'].lower()) != -1:
                         users_to_notify.append(user)
 
                 if len(users_to_notify) > 0:
@@ -608,3 +617,28 @@ class SlackEventHandler:
                 logger.debug(event)
             else:
                 raise
+
+    def sing_to_me(self, sc, event):
+        """
+        Replies with song lyrics for a popular song on Genius
+        :param sc: SlackClient used to connect to server
+        :param event: event to be handled by the method
+        :return:
+        """
+        try:
+            text = event[0]['text'].lower()
+            if text == 'sing to me':
+                songs = get_top_songs()
+                n = random.randint(0, len(songs)-1)
+                r = get_request(songs[n])
+                artist, song = get_artist_song(r)
+                lyrics = get_lyrics(r)
+
+        except KeyError:
+            if 'type' not in event[0].keys():
+                logger.debug("Don't worry about this one.")
+                logger.debug(event)
+            else:
+                raise
+
+        pass

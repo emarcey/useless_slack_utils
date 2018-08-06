@@ -4,7 +4,7 @@ class InvalidFlagNameException(Exception):
     """
 
     def __init__(self, message, *args):
-        self.message = message;
+        self.message = message
 
 
 class TypeNotHandledException(Exception):
@@ -13,4 +13,13 @@ class TypeNotHandledException(Exception):
     """
 
     def __init__(self, message, *args):
-        self.message = message;
+        self.message = message
+
+
+class BadStatusCodeException(Exception):
+    """
+    Use if a request does not return a 200 status code
+    """
+
+    def __init__(self, url, status_code, *args):
+        self.message = "Status Code {s} received trying to reach {u}".format(s=status_code, u=url)
