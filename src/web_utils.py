@@ -1,5 +1,5 @@
 import requests
-from src import request_utils
+from src import exceptions
 import logging
 from lxml import html
 
@@ -7,9 +7,27 @@ logger = logging.getLogger()
 logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 
+
+def get_request(url):
+    """
+    Passes a url to a get request. Just a little error handling
+
+    :param url: URL to request
+    :return: Request object returned from get method
+    """
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            raise exceptions.BadStatusCodeException(url, r.status_code)
+
+        return r
+    except exceptions.BadStatusCodeException as e:
+        logger.error(e.message)
+
+
 def get_top_songs():
     songs = []
-    r = request_utils.get_request('https://genius.com/')
+    r = get_request('https://genius.com/')
     h = html.fromstring(r.text)
     table = h.find_class('column_layout-column_span column_layout-column_span--full')[0]
     for x in table.iter('a'):
@@ -55,8 +73,3 @@ def get_lyrics(r):
             elif line[0] != '[' and add_line:
                 o_lyrics.append(line)
     return o_lyrics
-
-if __name__ == '__main__':
-    songs = get_top_songs()
-    r = requests.get(songs[0])
-    print(get_artist_song(r))

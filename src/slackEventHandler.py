@@ -7,8 +7,7 @@ import re
 
 from src.str_utils import find_element_in_string, strip_punctuation
 from src.misc_utils import load_homophones
-from src.genius_utils import get_lyrics, get_top_songs, get_artist_song
-from src.request_utils import get_request
+from src.web_utils import get_request, get_lyrics, get_top_songs, get_artist_song
 from src import exceptions
 
 logger = logging.getLogger()
@@ -28,7 +27,8 @@ class SlackEventHandler:
                  magic_eight_flg=False,
                  homophone_flg=False,
                  reading_level_flg=False,
-                 sing_to_me_flg=None,
+                 sing_to_me_flg=False,
+                 clean_your_mouth_with_soap_flg=False,
                  handler_flags=None,
                  run_level="DM Only",
                  users=None,
@@ -48,6 +48,7 @@ class SlackEventHandler:
         :param homophone_flg: (Bool) True if you want the handler to perform homophone_suggest
         :param reading_level_flg: (Bool) True if you want the handler to perform reading_level
         :param sing_to_me_flg: (Bool) True if you want the handler to perform sing_to_me
+        :param clean_your_mouth_with_soap_flg: (Bool) True if you want the handler to perform clean_your_mouth_with_soap
         :param handler_flags: (Dict) Dictionary of handler flags; alternative to passing each flag
         :param run_level: (str) Works on 3 levels: DM Only (only direct messages), Private (dms and private channels),
             and all
@@ -71,7 +72,8 @@ class SlackEventHandler:
             'magic_eight_flg': False,
             'homophone_flg': False,
             'reading_level_flg': False,
-            'sing_to_me_flg': False
+            'sing_to_me_flg': False,
+            'clean_your_mouth_with_soap_flg': False
         }
 
         if handler_flags:
@@ -95,6 +97,7 @@ class SlackEventHandler:
             self.update_flag('homophone_flg', homophone_flg)
             self.update_flag('reading_level_flg', reading_level_flg)
             self.update_flag('sing_to_me_flg', sing_to_me_flg)
+            self.update_flag('clean_your_mouth_with_soap_flg', clean_your_mouth_with_soap_flg)
 
         # handle run_level
         self.run_level = None
