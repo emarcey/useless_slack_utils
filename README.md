@@ -1,5 +1,5 @@
 # useless_slack_utils
-Very important Slack utilities for the otherwise lazy among you
+Very important Slack utilities for people who want to drive their co-workers crazy.
 
 Uses the Slack client for Python to handle incoming events in a series of pretty useless ways.
 
@@ -17,6 +17,7 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
   - **Homophone_Suggest:** whenever a homophone is found, suggest the opposite
   - **Reading_Level:** Calculates the estimated reading level of a comment based on the [Flesch-Kincaid Grade Level Score](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests#Flesch%E2%80%93Kincaid_grade_level) and responds in that channel.
   - **Sing_to_Me:** Chooses a random song from the list of popular songs on [Genius](https://genius.com) and messages each line.
+  - **Clean_Your_Mouth_With_Soap:** Reprimands a user who uses a bad word from this site: http://www.bannedwordlist.com/lists/swearWords.xml
 
 ### Planned:
   - **Set_Typing:** whenever someone starts typing in a channel, set yourself to typing as well. Stop typing when they stop.
@@ -28,5 +29,7 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
 2. Clone the repo.
 3. Set up a test token using [Python-SlackClient](https://slackapi.github.io/python-slackclient/auth.html#test-tokens).
 4. Most of the packages are base Python packages, but you will need to install:
-   - [giphypop](https://github.com/shaunduncan/giphypop)
+   - [giphypop](https://github.com/shaunduncan/giphypop) to send Gifs
+   - [requests](http://docs.python-requests.org/en/master/) to scrape websites
+   - [lxml](https://lxml.de/) to process the HTML
 5. Use run_handler.py to test.

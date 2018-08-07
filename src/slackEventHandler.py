@@ -7,7 +7,7 @@ import re
 
 from src.str_utils import find_element_in_string, strip_punctuation
 from src.misc_utils import load_homophones
-from src.web_utils import get_request, get_lyrics, get_top_songs, get_artist_song
+from src import web_utils
 from src import exceptions
 
 logger = logging.getLogger()
@@ -35,7 +35,8 @@ class SlackEventHandler:
                  responses=None,
                  stay_channel=None,
                  init_homophones=None,
-                 min_words=10):
+                 min_words=10,
+                 bad_words=None):
         """
         :param slack_token: (str) API token to connect to Slack
         :param random_reply_flg: (Bool) True if you want the handler to perform the random_reply handling
@@ -57,6 +58,7 @@ class SlackEventHandler:
         :param stay_channel: (str) channel to use if you're doing someones_talking_about_you
         :param init_homophones: (dict) override dictionary of homophones to use
         :param min_words: (int) minimum number of words allows for a reading_level check
+        :param bad_words: (list) override of bad words for clean_your_mouth_with_soap
         """
 
         self.slack_token = None
@@ -98,6 +100,21 @@ class SlackEventHandler:
             self.update_flag('reading_level_flg', reading_level_flg)
             self.update_flag('sing_to_me_flg', sing_to_me_flg)
             self.update_flag('clean_your_mouth_with_soap_flg', clean_your_mouth_with_soap_flg)
+
+        # handle bad_words
+        if self.handler_flags['clean_your_mouth_with_soap_flg']:
+            if bad_words:
+                try:
+                    if type(bad_words) in (list, set):
+                        self.bad_words = set(bad_words)
+                    else:
+                        raise TypeError
+                except TypeError:
+                    logger.error("Your input bad words are an incorrect type, {t}. Expected list or set.".
+                                 format(t=type(bad_words)))
+                    raise
+            else:
+                self.bad_words = web_utils.get_bad_words()
 
         # handle run_level
         self.run_level = None
@@ -365,8 +382,6 @@ class SlackEventHandler:
                             if (self.run_level == 'DM Only' and msg_type == 'IM') or \
                                 (self.run_level == 'Private' and msg_type != 'Public') or\
                                     self.run_level == 'All':
-                                print('test')
-                                print(self.handler_flags)
 
                                 # if message is in correct scope, perform designated tasks
                                 if self.handler_flags['random_reply_flg']:
@@ -382,8 +397,9 @@ class SlackEventHandler:
                                 if self.handler_flags['reading_level_flg']:
                                     self.reading_level(sc, event)
                                 if self.handler_flags['sing_to_me_flg']:
-                                    print('test2')
                                     self.sing_to_me(sc, event)
+                                if self.handler_flags['clean_your_mouth_with_soap_flg']:
+                                    self.clean_your_mouth_with_soap(sc, event, all_users)
                             else:
                                 logger.debug("Message not in scope.")
                         time.sleep(1)
@@ -633,19 +649,46 @@ class SlackEventHandler:
         """
         try:
             text = event[0]['text'].lower()
-            print(text)
             if text == 'sing to me':
-                songs = get_top_songs()
+                songs = web_utils.get_top_songs()
                 n = random.randint(0, len(songs)-1)
-                r = get_request(songs[n])
-                artist, song = get_artist_song(r)
-                lyrics = get_lyrics(r)
+                r = web_utils.get_request(songs[n])
+                artist, song = web_utils.get_artist_song(r)
+                lyrics = web_utils.get_lyrics(r)
                 message = "How about {s} by {a}".format(s=song, a=artist)
                 sc.rtm_send_message(event[0]['channel'], message)
 
                 for line in lyrics:
                     time.sleep(1)
                     sc.rtm_send_message(event[0]['channel'], line)
+
+        except KeyError:
+            if 'type' not in event[0].keys():
+                logger.debug("Don't worry about this one.")
+                logger.debug(event)
+            else:
+                raise
+
+    def clean_your_mouth_with_soap(self, sc, event, all_users):
+        """
+        If it finds any of the stored bad words, reprimands user who sent message
+        :param sc: SlackClient used to connect to server
+        :param event: event to be handled by the method
+        :return:
+        """
+        try:
+            text = event[0]['text'].lower().split()
+            clean = False
+            for word in text:
+                if word in self.bad_words:
+                    clean = True
+                    break
+            if clean:
+                message = "You kiss your mother with that mouth?\nClean it with soap!"
+                sc.rtm_send_message(event[0]['channel'], message)
+
+                gif_url = 'https://giphy.com/gifs/Rs05vfoiXpIOc/html5'
+                sc.rtm_send_message(event[0]['channel'], '{v}\n'.format(v=gif_url))
 
         except KeyError:
             if 'type' not in event[0].keys():

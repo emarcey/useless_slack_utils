@@ -2,6 +2,7 @@ import requests
 from src import exceptions
 import logging
 from lxml import html
+import re
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -73,3 +74,14 @@ def get_lyrics(r):
             elif line[0] != '[' and add_line:
                 o_lyrics.append(line)
     return o_lyrics
+
+
+def get_bad_words():
+    """
+    Gets the list of bad words from http://www.bannedwordlist.com/lists/swearWords.xml
+    :return: set of words (improves runtime lookup)
+    """
+    r = get_request('http://www.bannedwordlist.com/lists/swearWords.xml')
+    return set([re.sub(r'<(\/)?word>', '', line.strip())
+            for line in r.text.split('\n')
+            if line.strip().startswith('<word>')])

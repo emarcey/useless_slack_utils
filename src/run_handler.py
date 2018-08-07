@@ -50,7 +50,8 @@ if __name__ == '__main__':
                                 'magic_eight_flg': False,
                                 'homophone_flg': False,
                                 'reading_level_flg': False,
-                                'sing_to_me_flg': True
+                                'sing_to_me_flg': False,
+                                'clean_your_mouth_with_soap_flg': True
             },
                             run_level="Private",
                             #users=users,
