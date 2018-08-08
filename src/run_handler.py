@@ -39,25 +39,26 @@ if __name__ == '__main__':
         "BELT, SHOES, WATCH",
         "FAHAD'S GOT A SMALL DICK"
     ]
+    handler_flags = {
+        'random_reply_flg': False,
+        'random_gif_flg': False,
+        'set_typing_flg': False,
+        'mark_read_flg': False,
+        'someones_talking_about_you_flg': False,
+        'magic_eight_flg': False,
+        'homophone_suggest_flg': False,
+        'reading_level_flg': False,
+        'sing_to_me_flg': False,
+        'clean_your_mouth_with_soap_flg': True
+    }
 
     seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
-                            handler_flags = {
-                                'random_reply_flg': False,
-                                'random_gif_flg': False,
-                                'set_typing_flg': False,
-                                'mark_read_flg': False,
-                                'someones_talking_about_you_flg': False,
-                                'magic_eight_flg': False,
-                                'homophone_suggest_flg': False,
-                                'reading_level_flg': False,
-                                'sing_to_me_flg': False,
-                                'clean_your_mouth_with_soap_flg': True
-            },
+                            handler_flags=handler_flags,
                             run_level="Private",
                             #users=users,
                             users='All',
                             responses=responses,
-                            stay_channel='slack_py_test'
-                            )
+                            stay_channel='slack_py_test')
+    print(seh.get_util_flag_choices())
 
     seh.begin()

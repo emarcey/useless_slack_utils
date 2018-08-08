@@ -82,7 +82,7 @@ class SlackEventHandler:
             for flg in handler_flags:
                 try:
                     if flg in self.handler_flags.keys():
-                        self.handler_flags[flg] = handler_flags[flg]
+                        self.update_flag(flg,handler_flags[flg])
                     else:
                         raise KeyError
                 except KeyError:
@@ -342,6 +342,13 @@ class SlackEventHandler:
             logger.error(e.message)
             raise
 
+    def get_util_flag_choices(self):
+        """
+        Returns list of possible utility flags to choose from
+        :return: Keys for handler_flags dict as a list
+        """
+        return list(self.handler_flags.keys())
+
     def begin(self, length=-1):
         """
         Begin kicks of the event handling process.
@@ -390,6 +397,7 @@ class SlackEventHandler:
                                         eval_line = 'self.{f}(sc, event, msg_type, all_users)'.\
                                             format(f=flg.replace('_flg', ''))
                                         eval(eval_line)
+                                # Old non-parameterized code for calling utilities
                                 '''
                                 if self.handler_flags['random_reply_flg']:
                                     self.random_reply(sc, event)
@@ -663,8 +671,15 @@ class SlackEventHandler:
                 r = web_utils.get_request(songs[n])
                 artist, song = web_utils.get_artist_song(r)
                 lyrics = web_utils.get_lyrics(r)
-                message = "How about {s} by {a}".format(s=song, a=artist)
+                message = "How about {s} by {a}?".format(s=song, a=artist)
                 sc.rtm_send_message(event[0]['channel'], message)
+                time.sleep(1)
+                for i in range(3):
+                    sc.rtm_send_message(event[0]['channel'], '{n}'.format(n=i+1))
+                    time.sleep(1)
+                sc.rtm_send_message(event[0]['channel'], 'Go!')
+                time.sleep(1)
+                sc.rtm_send_message(event[0]['channel'], '')
 
                 for line in lyrics:
                     time.sleep(1)
