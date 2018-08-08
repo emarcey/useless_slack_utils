@@ -46,7 +46,7 @@ class SlackEventHandler:
         :param someones_talking_about_you_flg: (Bool) True if you want the handler to perform someones_talking_about_you
             handling
         :param magic_eight_flg: (Bool) True if you want the handler to perform magic_eight handling
-        :param homophone_flg: (Bool) True if you want the handler to perform homophone_suggest
+        :param homophone_suggest_flg: (Bool) True if you want the handler to perform homophone_suggest
         :param reading_level_flg: (Bool) True if you want the handler to perform reading_level
         :param sing_to_me_flg: (Bool) True if you want the handler to perform sing_to_me
         :param clean_your_mouth_with_soap_flg: (Bool) True if you want the handler to perform clean_your_mouth_with_soap
@@ -72,7 +72,7 @@ class SlackEventHandler:
             'mark_read_flg': False,
             'someones_talking_about_you_flg': False,
             'magic_eight_flg': False,
-            'homophone_flg': False,
+            'homophone_suggest_flg': False,
             'reading_level_flg': False,
             'sing_to_me_flg': False,
             'clean_your_mouth_with_soap_flg': False
@@ -86,9 +86,8 @@ class SlackEventHandler:
                     else:
                         raise KeyError
                 except KeyError:
-                    logging.debug("Flag {f} is not a valid handling method." +
-                                  " It will not be included in the event handler.".
-                                  format(f=flg))
+                    logging.debug("Flag {f} is not a valid handling method.".format(f=flg) +
+                                  " It will not be included in the event handler.")
         else:
             self.update_flag('random_reply_flg', random_reply_flg)
             self.update_flag('random_gif_flg', random_gif_flg)
@@ -96,7 +95,7 @@ class SlackEventHandler:
             self.update_flag('mark_read_flg', mark_read_flg)
             self.update_flag('someones_talking_about_you_flg', someones_talking_about_you_flg)
             self.update_flag('magic_eight_flg', magic_eight_flg)
-            self.update_flag('homophone_flg', homophone_flg)
+            self.update_flag('homophone_suggest_flg', homophone_flg)
             self.update_flag('reading_level_flg', reading_level_flg)
             self.update_flag('sing_to_me_flg', sing_to_me_flg)
             self.update_flag('clean_your_mouth_with_soap_flg', clean_your_mouth_with_soap_flg)
@@ -345,7 +344,9 @@ class SlackEventHandler:
 
     def begin(self, length=-1):
         """
-        begin kicks of the event handling process
+        Begin kicks of the event handling process.
+        Uses eval() to call handling method. Currently passes sc, event, msg_type and all_users to method.
+        If you add a utility that uses any other arguments, you will need to update this line
 
         :param length: (int) Number of seconds to continue loop; -1 if should not end
         :return: None
@@ -384,6 +385,12 @@ class SlackEventHandler:
                                     self.run_level == 'All':
 
                                 # if message is in correct scope, perform designated tasks
+                                for flg in self.handler_flags:
+                                    if self.handler_flags[flg] and flg != 'random_gif_flg':
+                                        eval_line = 'self.{f}(sc, event, msg_type, all_users)'.\
+                                            format(f=flg.replace('_flg', ''))
+                                        eval(eval_line)
+                                '''
                                 if self.handler_flags['random_reply_flg']:
                                     self.random_reply(sc, event)
                                 if self.handler_flags['mark_read_flg']:
@@ -399,7 +406,8 @@ class SlackEventHandler:
                                 if self.handler_flags['sing_to_me_flg']:
                                     self.sing_to_me(sc, event)
                                 if self.handler_flags['clean_your_mouth_with_soap_flg']:
-                                    self.clean_your_mouth_with_soap(sc, event, all_users)
+                                    self.clean_your_mouth_with_soap(sc, event)
+                                    '''
                             else:
                                 logger.debug("Message not in scope.")
                         time.sleep(1)
@@ -431,7 +439,7 @@ class SlackEventHandler:
         else:
             return 'IM'
 
-    def random_reply(self, sc, event):
+    def random_reply(self, sc, event, *args):
         """
         For a given message event,
         random_reply sends a random message from the list if responses.
@@ -464,7 +472,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def mark_read(self, sc, event, msg_type):
+    def mark_read(self, sc, event, msg_type, *args):
         """
         For a given message event, if the event has a user notification tag, but it does not contain the user's name
         mark_read marks the channel as read up to that point
@@ -497,7 +505,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def someones_talking_about_you(self, sc, event, msg_type, all_users):
+    def someones_talking_about_you(self, sc, event, msg_type, all_users, *args):
         """
         For a given message event, if a user's full name is found in the message text
         someones_talking_about_you sends a message to a notify channel which tags the person talked about,
@@ -551,7 +559,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def magic_eight(self, sc, event):
+    def magic_eight(self, sc, event, *args):
         """
         For a given message event, if a '?' is found in the message
         magic_eight sends one of the top 10 magic 8 ball gifs from giphy as a message
@@ -580,7 +588,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def homophone_suggest(self, sc, event):
+    def homophone_suggest(self, sc, event, *args):
         """
         For a given message event and for every homophone found in the message,
         homophone_suggest sends a message suggesting the opposite homophone
@@ -608,7 +616,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def reading_level(self, sc, event):
+    def reading_level(self, sc, event, *args):
         """
         Calculate the reading level of a given comment
         :param sc: SlackClient used to connect to server
@@ -640,7 +648,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def sing_to_me(self, sc, event):
+    def sing_to_me(self, sc, event, *args):
         """
         Replies with song lyrics for a popular song on Genius
         :param sc: SlackClient used to connect to server
@@ -669,7 +677,7 @@ class SlackEventHandler:
             else:
                 raise
 
-    def clean_your_mouth_with_soap(self, sc, event, all_users):
+    def clean_your_mouth_with_soap(self, sc, event, *args):
         """
         If it finds any of the stored bad words, reprimands user who sent message
         :param sc: SlackClient used to connect to server

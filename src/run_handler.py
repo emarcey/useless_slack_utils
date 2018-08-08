@@ -48,7 +48,7 @@ if __name__ == '__main__':
                                 'mark_read_flg': False,
                                 'someones_talking_about_you_flg': False,
                                 'magic_eight_flg': False,
-                                'homophone_flg': False,
+                                'homophone_suggest_flg': False,
                                 'reading_level_flg': False,
                                 'sing_to_me_flg': False,
                                 'clean_your_mouth_with_soap_flg': True
