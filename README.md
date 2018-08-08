@@ -33,3 +33,18 @@ A SlackEventHandler checks all of your incoming messages and handles them accord
    - [requests](http://docs.python-requests.org/en/master/) to scrape websites
    - [lxml](https://lxml.de/) to process the HTML
 5. Use run_handler.py to test.
+
+## Adding a utility
+
+If you want to add your own utility, there's a few steps.
+
+1. Add the method as a body of the slackEventHandler. This is the obvious one.
+    - This method should have, at minimum, the parameters sc (the slack client) and event (the message event), as well as a *args
+2. Check the parameters passed in the slackEventHandler.begin() method.
+    - Currently, it passes sc (the slack client), event (the message event), msg_type (the type of message, i.e. DM, Public), and all_users (a list of dict objects containing information about every user except the one running the client)
+    - It uses an eval() statement to pass the functions as parameters, so if you use other parameters, update the statement there.
+3. Update the slackEventHandler __init__() method as follows:
+    - Include the flag as an argument. The flag should follow the format {method_name}+'_flg'.
+        - i.e. mark_read() should have the corresponding flag: mark_read_flg.
+    - Update the self.handler_flgs dict to include your flag.
+    - Update the code that sets the flags in self.handler_flgs to include your flag.
