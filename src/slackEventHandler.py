@@ -25,7 +25,7 @@ class SlackEventHandler:
                  mark_read_flg=False,
                  someones_talking_about_you_flg=False,
                  magic_eight_flg=False,
-                 homophone_flg=False,
+                 homophone_suggest_flg=False,
                  reading_level_flg=False,
                  sing_to_me_flg=False,
                  clean_your_mouth_with_soap_flg=False,
@@ -82,7 +82,7 @@ class SlackEventHandler:
             for flg in handler_flags:
                 try:
                     if flg in self.handler_flags.keys():
-                        self.update_flag(flg,handler_flags[flg])
+                        self.update_flag(flg, handler_flags[flg])
                     else:
                         raise KeyError
                 except KeyError:
@@ -95,7 +95,7 @@ class SlackEventHandler:
             self.update_flag('mark_read_flg', mark_read_flg)
             self.update_flag('someones_talking_about_you_flg', someones_talking_about_you_flg)
             self.update_flag('magic_eight_flg', magic_eight_flg)
-            self.update_flag('homophone_suggest_flg', homophone_flg)
+            self.update_flag('homophone_suggest_flg', homophone_suggest_flg)
             self.update_flag('reading_level_flg', reading_level_flg)
             self.update_flag('sing_to_me_flg', sing_to_me_flg)
             self.update_flag('clean_your_mouth_with_soap_flg', clean_your_mouth_with_soap_flg)
