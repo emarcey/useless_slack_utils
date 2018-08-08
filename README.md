@@ -46,5 +46,5 @@ If you want to add your own utility, there's a few steps.
 3. Update the slackEventHandler __init__() method as follows:
     - Include the flag as an argument. The flag should follow the format {method_name}+'_flg'.
         - i.e. mark_read() should have the corresponding flag: mark_read_flg.
-    - Update the self.handler_flgs dict to include your flag.
-    - Update the code that sets the flags in self.handler_flgs to include your flag.
+    - Update the self.handler_flags dict to include your flag.
+    - Update the code that sets the flags in self.handler_flags to include your flag.
