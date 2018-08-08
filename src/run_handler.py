@@ -3,6 +3,7 @@ import os
 
 from slackclient import SlackClient
 from src.slackEventHandler import SlackEventHandler
+
 logger = logging.getLogger()
 logging.basicConfig()
 logger.setLevel(logging.DEBUG)
@@ -49,7 +50,7 @@ if __name__ == '__main__':
         'homophone_suggest_flg': False,
         'reading_level_flg': False,
         'sing_to_me_flg': False,
-        'clean_your_mouth_with_soap_flg': True
+        'clean_your_mouth_with_soap_flg': False
     }
 
     seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
@@ -59,6 +60,5 @@ if __name__ == '__main__':
                             users='All',
                             responses=responses,
                             stay_channel='slack_py_test')
-    print(seh.get_util_flag_choices())
 
     seh.begin()
