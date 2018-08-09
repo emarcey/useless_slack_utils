@@ -52,12 +52,12 @@ if __name__ == '__main__':
         'homophone_suggest_flg': False,
         'reading_level_flg': False,
         'sing_to_me_flg': False,
-        'clean_your_mouth_with_soap_flg': False
+        'clean_your_mouth_with_soap_flg': True
     }
 
     seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
-                            clean_your_mouth_with_soap_flg=True,
-                            #handler_flags=handler_flags,
+                            #clean_your_mouth_with_soap_flg=True,
+                            handler_flags=handler_flags,
                             run_level="Private",
                             #users=users,
                             users='All',

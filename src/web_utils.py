@@ -83,5 +83,5 @@ def get_bad_words():
     """
     r = get_request('http://www.bannedwordlist.com/lists/swearWords.xml')
     return set([re.sub(r'<(\/)?word>', '', line.strip())
-            for line in r.text.split('\n')
-            if line.strip().startswith('<word>')])
+                for line in r.text.split('\n')
+                if line.strip().startswith('<word>')])
