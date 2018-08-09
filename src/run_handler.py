@@ -10,7 +10,7 @@ logging.basicConfig()
 logger.setLevel(logging.DEBUG)
 
 if __name__ == '__main__':
-    slack_token = os.environ["SLACK_API_TOKEN"]
+    slack_token = os.environ["USELESS_SLACK_BOT_TOKEN"]
     logger.debug(slack_token)
     sc = SlackClient(slack_token)
 
@@ -48,17 +48,17 @@ if __name__ == '__main__':
         'set_typing_flg': False,
         'mark_read_flg': False,
         'someones_talking_about_you_flg': False,
-        'magic_eight_flg': False,
-        'homophone_suggest_flg': False,
-        'reading_level_flg': False,
+        'magic_eight_flg': True,
+        'homophone_suggest_flg': True,
+        'reading_level_flg': True,
         'sing_to_me_flg': False,
         'clean_your_mouth_with_soap_flg': True
     }
 
-    seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
+    seh = SlackEventHandler(os.environ["USELESS_SLACK_BOT_TOKEN"],
                             #clean_your_mouth_with_soap_flg=True,
                             handler_flags=handler_flags,
-                            run_level="Private",
+                            run_level="All",
                             #users=users,
                             users='All',
                             responses=responses,

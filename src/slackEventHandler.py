@@ -411,7 +411,7 @@ class SlackEventHandler:
         sc = SlackClient(self.slack_token)
 
         try:
-            if sc.rtm_connect():
+            if sc.rtm_connect(with_team_state=False):
                 # get list of all users
                 all_users = [
                     {
@@ -424,11 +424,9 @@ class SlackEventHandler:
                     if 'first_name' in user['profile'].keys() and 'last_name' in user['profile'].keys()]
 
                 start_time = time.time()
-
                 # connect to server and start monitoring
                 while sc.server.connected and (time.time() <= start_time+length or length == -1):
                     event = sc.rtm_read()
-
                     try:
                         if event:
                             logger.debug(event)
@@ -464,16 +462,17 @@ class SlackEventHandler:
                                     self.sing_to_me(sc, event)
                                 if self.handler_flags['clean_your_mouth_with_soap_flg']:
                                     self.clean_your_mouth_with_soap(sc, event)
-                                    '''
+                                '''
                             else:
                                 logger.debug("Message not in scope.")
-                        time.sleep(1)
 
                     except KeyError:
                         logger.debug("Ignore this event: " + str(event))
 
-                if time.time() > start_time + length:
-                    logger.debug("Event handling completed.\nStopping Slack monitor.")
+                    time.sleep(1)
+
+            if time.time() > start_time + length:
+                logger.debug("Event handling completed.\nStopping Slack monitor.")
         except KeyboardInterrupt:
             logger.debug("Stopping Slack monitor.")
             raise
