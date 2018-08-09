@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 
 from slackclient import SlackClient
 from src.slackEventHandler import SlackEventHandler
@@ -16,7 +17,8 @@ if __name__ == '__main__':
     users = [
         'USLACKBOT',
         'U9V5Q6886',
-        'U9UHKFV9R'
+        'U9UHKFV9R',
+        'U9TS7EW7K'
     ]
 
     # definitely not things a real person has said

@@ -356,6 +356,48 @@ class SlackEventHandler:
         """
         return list(self.handler_flags.keys())
 
+    def get_users(self):
+        """
+        Calls Slack Client and gets all users
+        :return: List of dicts with users
+        """
+        sc = SlackClient(self.slack_token)
+        return [{'name': user['name'],
+                 'id': user['id'],
+                 'first_name': user['profile']['first_name'],
+                 'last_name': user['profile']['last_name']}
+                for user in sc.api_call("users.list")['members']
+                if 'first_name' in user['profile'].keys() and 'last_name' in user['profile'].keys()]
+
+    def search_user_by_name(self, username=None, first_name=None, last_name=None):
+        """
+        Look up a user by their username, first name and/or last name
+        :param username:
+        :param first_name:
+        :param last_name:
+        :return:
+        """
+        users = self.get_users()
+        try:
+            if username:
+                return [user for user in users if user['name'].lower() == username.lower()]
+            elif first_name and last_name:
+                return [user for user in users if user['first_name'].lower() == first_name.lower() and
+                        user['last_name'].lower() == last_name.lower()]
+            elif first_name:
+                return [user for user in users if user['first_name'].lower() == first_name.lower()]
+            elif last_name:
+                return [user for user in users if user['last_name'].lower() == last_name.lower()]
+            else:
+                message = "Expected username, first_name or last_name. None found."
+                raise exceptions.NoArgumentsPassedException(message)
+        except KeyError:
+            logger.error("Expected username, first_name or last_name. None found.")
+            raise
+        except exceptions.NoArgumentsPassedException as e:
+            logger.error(e.message)
+            raise
+
     def begin(self, length=-1):
         """
         Begin kicks of the event handling process.

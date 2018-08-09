@@ -23,3 +23,12 @@ class BadStatusCodeException(Exception):
 
     def __init__(self, url, status_code, *args):
         self.message = "Status Code {s} received trying to reach {u}".format(s=status_code, u=url)
+
+
+class NoArgumentsPassedException(Exception):
+    """
+    Use if a method does not have any of the expected arguments
+    """
+
+    def __init__(self,message):
+        self.message = message
