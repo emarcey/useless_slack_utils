@@ -177,6 +177,8 @@ class SlackEventHandler:
             logger.error("Invalid type {t} for min_words; expected int".format(t=type(min_words)))
             raise
 
+    # Helper methods. Most of them just wrap some error handling and validation around updates
+
     def update_run_level(self, new_run_level):
         """
         Update the run_level for the handler
@@ -451,6 +453,8 @@ class SlackEventHandler:
                 return 'Private'
         else:
             return 'IM'
+
+    # Utility Methods
 
     def random_reply(self, sc, event, *args):
         """
