@@ -54,7 +54,8 @@ if __name__ == '__main__':
     }
 
     seh = SlackEventHandler(os.environ["SLACK_API_TOKEN"],
-                            handler_flags=handler_flags,
+                            clean_your_mouth_with_soap_flg=True,
+                            #handler_flags=handler_flags,
                             run_level="Private",
                             #users=users,
                             users='All',

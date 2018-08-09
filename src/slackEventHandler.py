@@ -89,6 +89,11 @@ class SlackEventHandler:
                     logging.debug("Flag {f} is not a valid handling method.".format(f=flg) +
                                   " It will not be included in the event handler.")
         else:
+            for flg in self.handler_flags:
+                eval("self.update_flag('{f}',{f})".format(f=flg))
+
+            # Old non-parameterized code
+            '''
             self.update_flag('random_reply_flg', random_reply_flg)
             self.update_flag('random_gif_flg', random_gif_flg)
             self.update_flag('set_typing_flg', set_typing_flg)
@@ -99,7 +104,7 @@ class SlackEventHandler:
             self.update_flag('reading_level_flg', reading_level_flg)
             self.update_flag('sing_to_me_flg', sing_to_me_flg)
             self.update_flag('clean_your_mouth_with_soap_flg', clean_your_mouth_with_soap_flg)
-
+            '''
         # handle bad_words
         if self.handler_flags['clean_your_mouth_with_soap_flg']:
             if bad_words:
